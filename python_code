@@ -1,0 +1,55 @@
+import webbrowser
+import speech_recognition as sr
+import pyttsx3 as ptx
+from google import genai
+import os
+
+engine=ptx.init() 
+r=sr.Recognizer() #speech recognition object for speech to text
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY")) # Client will automatically read your GEMINI_API_KEY from system variables
+
+def speak(text):
+    engine.say(text)
+    engine.runAndWait() #needed as else if will stop just after the start and will not hear
+
+def listen():
+        speak("Initializing..")
+        print("kindly wait")
+        with sr.Microphone() as source:
+            r.adjust_for_ambient_noise(source, duration=2)
+            while True:
+                print("listening")
+                try:
+                    audio = r.listen(source, timeout=4, phrase_time_limit=1)
+                    initial_text = r.recognize_google(audio)  # using Google Web Speech AP
+                    print(initial_text)
+                    if (initial_text.lower()=="quit"):
+                        speak("Terminating session")
+                        break  # stop only when "quit" is heard
+                    elif (initial_text.lower()=="Hello"):
+                        speak("How may I help you...")
+                        continue
+                    else:
+                        ProcessCommand(initial_text)  
+                except Exception as e:
+                    print("Error: {0}".format(e))
+                except sr.UnknownValueError:
+                    print("Sorry, I could not understand.")
+
+def AiProcess(command): 
+    response = client.models.generate_content(model="gemini-2.5-flash",contents=command) # Make a simple request to Gemini
+    return(response.text)
+
+def ProcessCommand(c):
+    words=c.lower().split(" ")
+    if "open" in words:
+        idx=words.index("open")
+        if idx+1<len(words):
+            nxtword=words[idx+1]
+            webbrowser.open(f"https://www.{nxtword.lower()}.com")
+    else:
+        #let google gemini handle the request
+        speak(AiProcess(c))
+
+if __name__=="__main__":
+    listen()
