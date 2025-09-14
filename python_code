@@ -4,31 +4,37 @@ import pyttsx3 as ptx
 from google import genai
 import os
 
-engine=ptx.init() 
+
 r=sr.Recognizer() #speech recognition object for speech to text
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY")) # Client will automatically read your GEMINI_API_KEY from system variables
 
 def speak(text):
+    engine=ptx.init() 
     engine.say(text)
     engine.runAndWait() #needed as else if will stop just after the start and will not hear
+    engine.stop()
 
 def listen():
         speak("Initializing..")
         print("kindly wait")
         with sr.Microphone() as source:
-            r.adjust_for_ambient_noise(source, duration=2)
+            r.adjust_for_ambient_noise(source, duration=5)
             while True:
                 print("listening")
                 try:
-                    audio = r.listen(source, timeout=4, phrase_time_limit=1)
+                    audio = r.listen(source, timeout=4, phrase_time_limit=5)
                     initial_text = r.recognize_google(audio)  # using Google Web Speech AP
                     print(initial_text)
                     if (initial_text.lower()=="quit"):
                         speak("Terminating session")
                         break  # stop only when "quit" is heard
-                    elif (initial_text.lower()=="Hello"):
-                        speak("How may I help you...")
-                        continue
+
+                    elif (initial_text.lower()=="hello"):
+                        speak("how may i help you...")
+
+                    elif(initial_text.lower()=="friend"):
+                        speak("FUCK YOU")
+                        
                     else:
                         ProcessCommand(initial_text)  
                 except Exception as e:
@@ -36,20 +42,46 @@ def listen():
                 except sr.UnknownValueError:
                     print("Sorry, I could not understand.")
 
-def AiProcess(command): 
-    response = client.models.generate_content(model="gemini-2.5-flash",contents=command) # Make a simple request to Gemini
-    return(response.text)
+def AiProcess(command):      
+    try:
+        print("Asking Gemini...")  # Let user know it's processing
+        
+        # Simple request without generation_config
+        response = client.models.generate_content(
+            model="gemini-2.5-flash", 
+            contents=command,
+            )
+        
+        print(f"Response received: {type(response)}")
+        
+        if hasattr(response, 'text'):
+            return response.text
+        elif hasattr(response, 'content'):
+            return response.content
+        else:
+            return str(response)
+
+    except Exception as e:
+        print(f"Gemini error: {e}")
+        return "Sorry, I had trouble getting a response. Please try again."
 
 def ProcessCommand(c):
     words=c.lower().split(" ")
+    idx=words.index("open")
+    if idx+1<len(words):
+        nxtword=words[idx+1]
+
     if "open" in words:
-        idx=words.index("open")
-        if idx+1<len(words):
-            nxtword=words[idx+1]
-            webbrowser.open(f"https://www.{nxtword.lower()}.com")
+        webbrowser.open(f"https://www.{nxtword.lower()}.com")
+
+    elif "play" in words:
+        pass
+
     else:
         #let google gemini handle the request
-        speak(AiProcess(c))
+        gemini_response = AiProcess(c)
+        print(f"Speaking: {gemini_response}")  # Debug
+        speak(gemini_response)
 
 if __name__=="__main__":
     listen()
