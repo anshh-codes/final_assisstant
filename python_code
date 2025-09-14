@@ -66,15 +66,14 @@ def AiProcess(command):
         return "Sorry, I had trouble getting a response. Please try again."
 
 def ProcessCommand(c):
-    words=c.lower().split(" ")
-    idx=words.index("open")
-    if idx+1<len(words):
-        nxtword=words[idx+1]
+    if "open" in c:
+        words=c.lower().split(" ")
+        idx=words.index("open")
+        if idx+1<len(words):
+            nxtword=words[idx+1]
+            webbrowser.open(f"https://www.{nxtword.lower()}.com")
 
-    if "open" in words:
-        webbrowser.open(f"https://www.{nxtword.lower()}.com")
-
-    elif "play" in words:
+    elif "play" in c:
         pass
 
     else:
