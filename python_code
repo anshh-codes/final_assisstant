@@ -31,9 +31,6 @@ def listen():
 
                     elif (initial_text.lower()=="hello"):
                         speak("how may i help you...")
-
-                    elif(initial_text.lower()=="friend"):
-                        speak("FUCK YOU")
                         
                     else:
                         ProcessCommand(initial_text)  
@@ -66,14 +63,14 @@ def AiProcess(command):
         return "Sorry, I had trouble getting a response. Please try again."
 
 def ProcessCommand(c):
-    if "open" in c:
+    if "open" in c: //extra functionality
         words=c.lower().split(" ")
         idx=words.index("open")
         if idx+1<len(words):
             nxtword=words[idx+1]
             webbrowser.open(f"https://www.{nxtword.lower()}.com")
 
-    elif "play" in c:
+    elif "play" in c://extra functionality
         pass
 
     else:
