@@ -29,7 +29,7 @@ def listen():
                         speak("Terminating session")
                         break  # stop only when "quit" is heard
 
-                    elif (initial_text.lower()=="hello"):
+                    elif (initial_text.lower()=="hi"):
                         speak("how may i help you...")
                         
                     else:
